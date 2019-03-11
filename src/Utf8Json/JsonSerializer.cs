@@ -1,6 +1,7 @@
 ﻿using Spreads.Buffers;
 using Spreads.Serialization.Utf8Json.Internal;
 using Spreads.Serialization.Utf8Json.Resolvers;
+using Spreads.Serialization.Utf8Json.Resolvers.Internal;
 using System;
 using System.IO;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace Spreads.Serialization.Utf8Json
     /// </summary>
     public static partial class JsonSerializer
     {
-        private static IJsonFormatterResolver defaultResolver;
+        private static readonly IJsonFormatterResolver defaultResolver = StandardResolver.Default;
 
         /// <summary>
         /// FormatterResolver that used resolver less overloads. If does not set it, used StandardResolver.Default.
@@ -25,10 +26,10 @@ namespace Spreads.Serialization.Utf8Json
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (defaultResolver == null)
-                {
-                    defaultResolver = StandardResolver.Default;
-                }
+                //if (defaultResolver == null)
+                //{
+                //    defaultResolver = StandardResolver.Default;
+                //}
 
                 return defaultResolver;
             }
@@ -46,15 +47,16 @@ namespace Spreads.Serialization.Utf8Json
             }
         }
 
-        /// <summary>
-        /// Set default resolver of Utf8Json APIs.
-        /// </summary>
-        /// <param name="resolver"></param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SetDefaultResolver(IJsonFormatterResolver resolver)
-        {
-            defaultResolver = resolver;
-        }
+        // TODO we actually could set it before touching this class
+        ///// <summary>
+        ///// Set default resolver of Utf8Json APIs.
+        ///// </summary>
+        ///// <param name="resolver"></param>
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public static void SetDefaultResolver(IJsonFormatterResolver resolver)
+        //{
+        //    defaultResolver = resolver;
+        //}
 
         /// <summary>
         /// Serialize to binary with default resolver.
@@ -62,7 +64,7 @@ namespace Spreads.Serialization.Utf8Json
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte[] Serialize<T>(T obj)
         {
-            return Serialize(obj, defaultResolver);
+            return Serialize(obj, null);
         }
 
         /// <summary>
@@ -71,11 +73,8 @@ namespace Spreads.Serialization.Utf8Json
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte[] Serialize<T>(T value, IJsonFormatterResolver resolver)
         {
-            if (resolver == null) resolver = DefaultResolver;
-
             var writer = new JsonWriter(MemoryPool.GetBuffer());
-            var formatter = resolver.GetFormatterWithVerify<T>();
-            formatter.Serialize(ref writer, value, resolver);
+            Serialize(ref writer, value, resolver);
             return writer.ToUtf8ByteArray();
         }
 
@@ -139,13 +138,24 @@ namespace Spreads.Serialization.Utf8Json
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Serialize<T>(ref JsonWriter writer, T value)
         {
-            Serialize<T>(ref writer, value, defaultResolver);
+            Serialize<T>(ref writer, value, null);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Serialize<T>(ref JsonWriter writer, T value, IJsonFormatterResolver resolver)
         {
-            if (resolver == null) resolver = DefaultResolver;
+            if (resolver == null)
+            {
+                if (DefaultStandardResolver.FormatterCache<T>.formatter != null)
+                {
+                    DefaultStandardResolver.FormatterCache<T>.formatter.Serialize(ref writer, value,
+                        DefaultStandardResolver
+                            .Instance); // StandardResolver.Default.GetFormatter<>().GetFormatterWithVerify<T>();
+                    return;
+                }
+
+                resolver = DefaultResolver;
+            }
 
             var formatter = resolver.GetFormatterWithVerify<T>();
             formatter.Serialize(ref writer, value, resolver);
@@ -269,14 +279,24 @@ namespace Spreads.Serialization.Utf8Json
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Deserialize<T>(DirectBuffer bytes)
         {
-            return Deserialize<T>(bytes, defaultResolver);
+            return Deserialize<T>(bytes, null);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Deserialize<T>(DirectBuffer bytes, IJsonFormatterResolver resolver)
         {
-            if (resolver == null) resolver = DefaultResolver;
             var reader = new JsonReader(bytes);
+            if (resolver == null)
+            {
+                if (DefaultStandardResolver.FormatterCache<T>.formatter != null)
+                {
+                    return DefaultStandardResolver.FormatterCache<T>.formatter.Deserialize(ref reader,
+                        DefaultStandardResolver
+                            .Instance); // StandardResolver.Default.GetFormatter<>().GetFormatterWithVerify<T>();
+                }
+                resolver = DefaultResolver;
+            }
+
             var formatter = resolver.GetFormatterWithVerify<T>();
             return formatter.Deserialize(ref reader, resolver);
         }

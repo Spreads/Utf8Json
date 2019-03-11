@@ -48,24 +48,24 @@ namespace Spreads.Serialization.Utf8Json.Resolvers
             CompositeResolver.formatters = formatters;
         }
 
-        public static void RegisterAndSetAsDefault(params IJsonFormatterResolver[] resolvers)
-        {
-            Register(resolvers);
-            JsonSerializer.SetDefaultResolver(CompositeResolver.Instance);
-        }
+        //public static void RegisterAndSetAsDefault(params IJsonFormatterResolver[] resolvers)
+        //{
+        //    Register(resolvers);
+        //    JsonSerializer.SetDefaultResolver(CompositeResolver.Instance);
+        //}
 
-        public static void RegisterAndSetAsDefault(params IJsonFormatter[] formatters)
-        {
-            Register(formatters);
-            JsonSerializer.SetDefaultResolver(CompositeResolver.Instance);
-        }
+        //public static void RegisterAndSetAsDefault(params IJsonFormatter[] formatters)
+        //{
+        //    Register(formatters);
+        //    JsonSerializer.SetDefaultResolver(CompositeResolver.Instance);
+        //}
 
-        public static void RegisterAndSetAsDefault(IJsonFormatter[] formatters, IJsonFormatterResolver[] resolvers)
-        {
-            Register(formatters);
-            Register(resolvers);
-            JsonSerializer.SetDefaultResolver(CompositeResolver.Instance);
-        }
+        //public static void RegisterAndSetAsDefault(IJsonFormatter[] formatters, IJsonFormatterResolver[] resolvers)
+        //{
+        //    Register(formatters);
+        //    Register(resolvers);
+        //    JsonSerializer.SetDefaultResolver(CompositeResolver.Instance);
+        //}
 
         public static IJsonFormatterResolver Create(params IJsonFormatter[] formatters)
         {

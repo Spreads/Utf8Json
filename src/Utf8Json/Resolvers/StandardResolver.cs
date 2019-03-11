@@ -66,7 +66,7 @@ namespace Spreads.Serialization.Utf8Json.Resolvers.Internal
             return FormatterCache<T>.formatter;
         }
 
-        static class FormatterCache<T>
+        internal static class FormatterCache<T>
         {
             public static readonly IJsonFormatter<T> formatter = GetFormatter();
 

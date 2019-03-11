@@ -141,7 +141,7 @@ namespace Spreads.Serialization.Utf8Json.Formatters
 
         public void Serialize(ref JsonWriter writer, VectorStorage<T> value, IJsonFormatterResolver formatterResolver)
         {
-            if (value.Storage == null || value.Storage == VectorStorage.Empty) { writer.WriteNull(); return; }
+            if (value.Storage == default || value.Storage == default) { writer.WriteNull(); return; }
 
             var vec = value.Storage.Vec;
             var count = value.Storage.Length;
@@ -163,7 +163,7 @@ namespace Spreads.Serialization.Utf8Json.Formatters
 
         public VectorStorage<T> Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
         {
-            if (reader.ReadIsNull()) return new VectorStorage<T>(VectorStorage.Empty);
+            if (reader.ReadIsNull()) return new VectorStorage<T>(default);
 
             var count = 0;
             var formatter = formatterResolver.GetFormatterWithVerify<T>();
@@ -189,7 +189,7 @@ namespace Spreads.Serialization.Utf8Json.Formatters
                 Array.Copy(array, am.Array, count);
                 Array.Clear(workingArea, 0, Math.Min(count, workingArea.Length));
                 var vs = VectorStorage.Create(am, 0, count);
-                return new VectorStorage<T>(vs); ;
+                return new VectorStorage<T>(vs);
             }
             finally
             {

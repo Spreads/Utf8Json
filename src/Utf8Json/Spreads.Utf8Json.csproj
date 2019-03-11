@@ -31,7 +31,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU' AND '$(TargetFramework)'!='NET45'">
-        <LangVersion>7.2</LangVersion>
+        <LangVersion>7.3</LangVersion>
         <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
         <DefineConstants>RELEASE;NETSTANDARD;NETSTANDARD2_0</DefineConstants>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -70,6 +70,7 @@
       <Compile Include="..\..\..\..\src\Spreads.Core\Buffers\ArrayMemory.cs" Link="Spreads\Buffers\ArrayMemory.cs" />
       <Compile Include="..\..\..\..\src\Spreads.Core\Buffers\BufferPool.cs" Link="Spreads\Buffers\BufferPool.cs" />
       <Compile Include="..\..\..\..\src\Spreads.Core\Buffers\BuffersThrowHelper.cs" Link="Spreads\Buffers\BuffersThrowHelper.cs" />
+      <Compile Include="..\..\..\..\src\Spreads.Core\Buffers\BufferWriter.cs" Link="Spreads\Buffers\BufferWriter.cs" />
       <Compile Include="..\..\..\..\src\Spreads.Core\Buffers\DirectBuffer.cs" Link="Spreads\Buffers\DirectBuffer.cs" />
       <Compile Include="..\..\..\..\src\Spreads.Core\Buffers\IPinnedSpan.cs" Link="Spreads\Buffers\IPinnedSpan.cs" />
       <Compile Include="..\..\..\..\src\Spreads.Core\Buffers\OffHeapBuffer.cs" Link="Spreads\Buffers\OffHeapBuffer.cs" />
@@ -84,13 +85,15 @@
       <Compile Include="..\..\..\..\src\Spreads.Core\Collections\Concurrent\LockedObjectPool.cs" Link="Spreads\Collections\LockedObjectPool.cs" />
       <Compile Include="..\..\..\..\src\Spreads.Core\Collections\Concurrent\ObjectPool.cs" Link="Spreads\Collections\ObjectPool.cs" />
       <Compile Include="..\..\..\..\src\Spreads.Core\DataTypes\Timestamp.cs" Link="Spreads\DataTypes\Timestamp.cs" />
-      <Compile Include="..\..\..\..\src\Spreads.Core\DataTypes\TypeEnum.cs" Link="Spreads\Serialization\TypeEnum.cs" />
+      <Compile Include="..\..\..\..\src\Spreads.Core\Serialization\SerializationThrowHelper.cs" Link="Spreads\Serialization\SerializationThrowHelper.cs" />
+      <Compile Include="..\..\..\..\src\Spreads.Core\Serialization\TypeEnum.cs" Link="Spreads\Serialization\TypeEnum.cs" />
       <Compile Include="..\..\..\..\src\Spreads.Core\Serialization\BinarySerializationAttribute.cs" Link="Spreads\Serialization\BinarySerializationAttribute.cs" />
       <Compile Include="..\..\..\..\src\Spreads.Core\Serialization\CompressionMethod.cs" Link="Spreads\Serialization\CompressionMethod.cs" />
       <Compile Include="..\..\..\..\src\Spreads.Core\Serialization\DataTypeHeader.cs" Link="Spreads\Serialization\DataTypeHeader.cs" />
       <Compile Include="..\..\..\..\src\Spreads.Core\Serialization\FourBytes.cs" Link="Spreads\Serialization\FourBytes.cs" />
-      <Compile Include="..\..\..\..\src\Spreads.Core\Serialization\IBinarySerializer.cs" Link="Spreads\Serialization\IBinarySerializer.cs" />
+      <Compile Include="..\..\..\..\src\Spreads.Core\Serialization\BinarySerializer'T.cs" Link="Spreads\Serialization\BinarySerializer'T.cs" />
       <Compile Include="..\..\..\..\src\Spreads.Core\Serialization\SerializationFormat.cs" Link="Spreads\Utils\SerializationFormat.cs" />
+      <Compile Include="..\..\..\..\src\Spreads.Core\Serialization\TypeEnumOrFixedSize.cs" Link="Spreads\Serialization\TypeEnumOrFixedSize.cs" />
       <Compile Include="..\..\..\..\src\Spreads.Core\Serialization\TypeHelper.cs" Link="Spreads\Serialization\TypeHelper.cs" />
       <Compile Include="..\..\..\..\src\Spreads.Core\Serialization\VersionAndFlags.cs" Link="Spreads\Serialization\VersionAndFlags.cs" />
       <Compile Include="..\..\..\..\src\Spreads.Core\Threading\AtomicCounter.cs" Link="Spreads\Threading\AtomicCounter.cs" />

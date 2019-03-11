@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace Spreads
 {
+#if !SPREADS
     internal class AdditionalCorrectnessChecks
     {
         // Unless _doAdditionalCorrectnessChecks is changed from default before this internal
@@ -217,6 +218,8 @@ namespace Spreads
 
         public static int AtomicCounterPoolBucketSize { get; set; } = 1024;
 
+        internal static bool UseStructLayoutSizeAsBlittableSize = false;
+
         //        public static bool LogMemoryPoolEvents { get; set; } = false;
 
         internal const int SlabLength = 128 * 1024;
@@ -235,4 +238,5 @@ namespace Spreads
 //        internal static Func<IQueryHandler> QueryHandlerFactory = null;
 
     }
+#endif
 }

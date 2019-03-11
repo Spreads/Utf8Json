@@ -7,7 +7,7 @@ using System.Text;
 using Spreads.Serialization.Utf8Json.Internal;
 using System.Text.RegularExpressions;
 using Spreads.Buffers;
-
+using Spreads.Serialization.Utf8Json.Formatters.Internal;
 #if NETSTANDARD
 
 using System.Dynamic;

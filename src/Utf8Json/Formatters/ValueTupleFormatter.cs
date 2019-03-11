@@ -3,6 +3,8 @@
 using System;
 
 #if !SPREADS
+using Spreads.Serialization.Utf8Json.Formatters.Internal;
+using Spreads.Serialization.Utf8Json.Internal;
 namespace Spreads.Serialization.Utf8Json.Formatters.Internal
 {
     // reduce static constructor generate size on generics(especially IL2CPP on Unity)

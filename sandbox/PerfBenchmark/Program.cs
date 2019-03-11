@@ -39,7 +39,7 @@ public class BenchmarkConfig : ManualConfig
         Add(MarkdownExporter.GitHub);
         Add(MemoryDiagnoser.Default);
 
-        var baseConfig = Job.MediumRun; // .WithLaunchCount(1).WithTargetCount(2).WithWarmupCount(1);
+        var baseConfig = Job.ShortRun; // .WithLaunchCount(1).WithTargetCount(2).WithWarmupCount(1);
         //Add(baseConfig.With(Runtime.Core).With(Jit.RyuJit).With(Platform.X64));
         Add(baseConfig.With(Runtime.Core).With(Jit.RyuJit).With(Platform.X64).With(CsProjCoreToolchain.NetCoreApp30));
     }
