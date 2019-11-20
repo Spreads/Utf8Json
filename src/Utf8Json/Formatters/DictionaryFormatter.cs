@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-
+using System.Diagnostics;
 #if NETSTANDARD
 using System.Collections.Concurrent;
 #endif
@@ -300,46 +300,44 @@ namespace Spreads.Serialization.Utf8Json.Formatters
                 writer.WriteNull();
                 return;
             }
-            else
+
+            var valueFormatter = formatterResolver.GetFormatterWithVerify<object>();
+
+            writer.WriteBeginObject();
+
+            var e = value.GetEnumerator();
+            try
             {
-                var valueFormatter = formatterResolver.GetFormatterWithVerify<object>();
-
-                writer.WriteBeginObject();
-
-                var e = value.GetEnumerator();
-                try
+                if (e.MoveNext())
                 {
-                    if (e.MoveNext())
-                    {
-                        System.Collections.DictionaryEntry item = (System.Collections.DictionaryEntry)e.Current;
-                        writer.WritePropertyName(item.Key.ToString());
-                        valueFormatter.Serialize(ref writer, item.Value, formatterResolver);
-                    }
-                    else
-                    {
-                        goto END;
-                    }
-
-                    while (e.MoveNext())
-                    {
-                        writer.WriteValueSeparator();
-                        System.Collections.DictionaryEntry item = (System.Collections.DictionaryEntry)e.Current;
-                        writer.WritePropertyName(item.Key.ToString());
-                        valueFormatter.Serialize(ref writer, item.Value, formatterResolver);
-                    }
+                    var item = (System.Collections.DictionaryEntry)e.Current;
+                    writer.WritePropertyName(item.Key.ToString());
+                    valueFormatter.Serialize(ref writer, item.Value, formatterResolver);
                 }
-                finally
+                else
                 {
-                    var disp = e as IDisposable;
-                    if (disp != null)
-                    {
-                        disp.Dispose();
-                    }
+                    goto END;
                 }
 
-                END:
-                writer.WriteEndObject();
+                while (e.MoveNext())
+                {
+                    writer.WriteValueSeparator();
+                    System.Collections.DictionaryEntry item = (System.Collections.DictionaryEntry)e.Current;
+                    writer.WritePropertyName(item.Key.ToString());
+                    valueFormatter.Serialize(ref writer, item.Value, formatterResolver);
+                }
             }
+            finally
+            {
+                var disp = e as IDisposable;
+                if (disp != null)
+                {
+                    disp.Dispose();
+                }
+            }
+
+            END:
+            writer.WriteEndObject();
         }
 
         public T Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)

@@ -135,35 +135,35 @@ namespace Spreads.Serialization.Utf8Json.Formatters
 
 #if SPREADS
 
-    internal class VectorStorageFormatter<T> : IJsonFormatter<VectorStorage<T>>
+    internal class VectorStorageFormatter<T> : IJsonFormatter<RetainedVec<T>>
     {
         static readonly ArrayPool<T> arrayPool = new ArrayPool<T>(99);
 
-        public void Serialize(ref JsonWriter writer, VectorStorage<T> value, IJsonFormatterResolver formatterResolver)
+        public void Serialize(ref JsonWriter writer, RetainedVec<T> value, IJsonFormatterResolver formatterResolver)
         {
             if (value.Storage == default || value.Storage == default) { writer.WriteNull(); return; }
 
-            var vec = value.Storage.Vec;
+            var vec = value.Storage;
             var count = value.Storage.Length;
 
             writer.WriteBeginArray();
             var formatter = formatterResolver.GetFormatterWithVerify<T>();
             if (count != 0)
             {
-                formatter.Serialize(ref writer, vec.DangerousGetRef<T>(0), formatterResolver);
+                formatter.Serialize(ref writer, vec.UnsafeReadUnaligned<T>(0), formatterResolver);
             }
 
             for (int i = 1; i < count; i++)
             {
                 writer.WriteValueSeparator();
-                formatter.Serialize(ref writer, vec.DangerousGetRef<T>(i), formatterResolver);
+                formatter.Serialize(ref writer, vec.UnsafeReadUnaligned<T>(i), formatterResolver);
             }
             writer.WriteEndArray();
         }
 
-        public VectorStorage<T> Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
+        public RetainedVec<T> Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
         {
-            if (reader.ReadIsNull()) return new VectorStorage<T>(default);
+            if (reader.ReadIsNull()) return new RetainedVec<T>(default);
 
             var count = 0;
             var formatter = formatterResolver.GetFormatterWithVerify<T>();
@@ -183,13 +183,13 @@ namespace Spreads.Serialization.Utf8Json.Formatters
                     array[count - 1] = formatter.Deserialize(ref reader, formatterResolver);
                 }
 
-                var am = BufferPool<T>.MemoryPool.RentMemory(count) as ArrayMemory<T>;
+                var rm = BufferPool<T>.MemoryPool.RentMemory(count);
+                array.AsSpan(0, count).CopyTo(rm.GetSpan().Slice(0, count));
                 
                 // ReSharper disable once PossibleNullReferenceException
-                Array.Copy(array, am.Array, count);
                 Array.Clear(workingArea, 0, Math.Min(count, workingArea.Length));
-                var vs = VectorStorage.Create(am, 0, count);
-                return new VectorStorage<T>(vs);
+                var vs = RetainedVec.Create(rm, 0, count);
+                return new RetainedVec<T>(vs);
             }
             finally
             {

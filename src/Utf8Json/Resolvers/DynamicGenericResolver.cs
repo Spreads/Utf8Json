@@ -7,6 +7,7 @@ using Spreads.Serialization.Utf8Json.Formatters;
 using System.Collections.Generic;
 using Spreads.Serialization.Utf8Json.Resolvers.Internal;
 using System.Collections.ObjectModel;
+using Spreads.Buffers;
 #if SPREADS
 using Spreads.Collections.Internal;
 using Spreads.DataTypes;
@@ -136,7 +137,7 @@ namespace Spreads.Serialization.Utf8Json.Resolvers.Internal
                 {
                     return CreateInstance(typeof(TimestampedFormatter<>), ti.GenericTypeArguments);
                 }
-                else if (genericType == typeof(VectorStorage<>))
+                else if (genericType == typeof(RetainedVec<>))
                 {
                     return CreateInstance(typeof(VectorStorageFormatter<>), ti.GenericTypeArguments);
                 }

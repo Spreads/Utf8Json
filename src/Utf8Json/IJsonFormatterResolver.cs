@@ -11,7 +11,7 @@ namespace Spreads.Serialization.Utf8Json
 
     public static class JsonFormatterResolverExtensions
     {
-#if NETCOREAPP3_0
+#if HAS_AGGR_OPT
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
 #endif
         public static IJsonFormatter<T> GetFormatterWithVerify<T>(this IJsonFormatterResolver resolver)

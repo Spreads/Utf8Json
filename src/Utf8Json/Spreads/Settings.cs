@@ -8,6 +8,47 @@ using System.Runtime.CompilerServices;
 namespace Spreads
 {
 #if !SPREADS
+    /// <summary>
+    ///     Specifies that a method that will never return under any circumstance.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method, Inherited = false)]
+    internal sealed class DoesNotReturnAttribute : Attribute
+    {
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="DoesNotReturnAttribute"/> class.
+        /// </summary>
+        public DoesNotReturnAttribute() { }
+    }
+
+    /// <summary>
+    ///     Specifies that the method will not return if the associated <see cref="Boolean"/>
+    ///     parameter is passed the specified value.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Parameter, Inherited = false)]
+    internal sealed class DoesNotReturnIfAttribute : Attribute
+    {
+        /// <summary>
+        ///     Gets the condition parameter value.
+        ///     Code after the method is considered unreachable by diagnostics if the argument
+        ///     to the associated parameter matches this value.
+        /// </summary>
+        public bool ParameterValue { get; }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="DoesNotReturnIfAttribute"/>
+        ///     class with the specified parameter value.
+        /// </summary>
+        /// <param name="parameterValue">
+        ///     The condition parameter value.
+        ///     Code after the method is considered unreachable by diagnostics if the argument
+        ///     to the associated parameter matches this value.
+        /// </param>
+        public DoesNotReturnIfAttribute(bool parameterValue)
+        {
+            ParameterValue = parameterValue;
+        }
+    }
+
     internal class AdditionalCorrectnessChecks
     {
         // Unless _doAdditionalCorrectnessChecks is changed from default before this internal

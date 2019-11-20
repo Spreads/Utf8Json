@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Buffers;
+using System.Buffers.Text;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -27,14 +30,13 @@ namespace Spreads.Serialization.Utf8Json.Formatters
         public void Serialize(ref JsonWriter writer, byte[] value, IJsonFormatterResolver formatterResolver)
         {
             if (value == null) { writer.WriteNull(); return; }
-
-            writer.WriteString(Convert.ToBase64String(value, Base64FormattingOptions.None));
+            ByteArraySegmentFormatter.Default.Serialize(ref writer, new ArraySegment<byte>(value), formatterResolver);
         }
 
         public byte[] Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
         {
             if (reader.ReadIsNull()) return null;
-
+            // TODO raw raw string and use Base64 class from System.Memory
             var str = reader.ReadString();
             return Convert.FromBase64String(str);
         }
@@ -48,13 +50,34 @@ namespace Spreads.Serialization.Utf8Json.Formatters
         {
             if (value.Array == null) { writer.WriteNull(); return; }
 
-            writer.WriteString(Convert.ToBase64String(value.Array, value.Offset, value.Count, Base64FormattingOptions.None));
+            var encodingLength = Base64.GetMaxEncodedToUtf8Length(value.Count);
+
+            byte[] outputText = null;
+
+            Span<byte> encodedBytes = encodingLength <= 256 ? // TODO to constant
+                stackalloc byte[encodingLength] :
+                (outputText = BufferPool<byte>.Rent(encodingLength));
+
+            OperationStatus status = Base64.EncodeToUtf8(value, encodedBytes, out int consumed, out int written);
+            Debug.Assert(status == OperationStatus.Done);
+            Debug.Assert(consumed == value.Count);
+
+            encodedBytes = encodedBytes.Slice(0, written);
+
+            writer.WriteQuotation();
+            writer.WriteRawSpan(encodedBytes);
+            writer.WriteQuotation();
+
+            if (outputText != null)
+            {
+                BufferPool<byte>.Return(outputText);
+            }
         }
 
         public ArraySegment<byte> Deserialize(ref JsonReader reader, IJsonFormatterResolver formatterResolver)
         {
             if (reader.ReadIsNull()) return default(ArraySegment<byte>);
-
+            // TODO use byte[].default
             var str = reader.ReadString();
             var bytes = Convert.FromBase64String(str);
             return new ArraySegment<byte>(bytes, 0, bytes.Length);

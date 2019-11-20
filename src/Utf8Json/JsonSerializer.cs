@@ -26,11 +26,6 @@ namespace Spreads.Serialization.Utf8Json
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                //if (defaultResolver == null)
-                //{
-                //    defaultResolver = StandardResolver.Default;
-                //}
-
                 return defaultResolver;
             }
         }
@@ -46,17 +41,6 @@ namespace Spreads.Serialization.Utf8Json
                 return defaultResolver != null;
             }
         }
-
-        // TODO we actually could set it before touching this class
-        ///// <summary>
-        ///// Set default resolver of Utf8Json APIs.
-        ///// </summary>
-        ///// <param name="resolver"></param>
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public static void SetDefaultResolver(IJsonFormatterResolver resolver)
-        //{
-        //    defaultResolver = resolver;
-        //}
 
         /// <summary>
         /// Serialize to binary with default resolver.
@@ -129,7 +113,7 @@ namespace Spreads.Serialization.Utf8Json
         internal static RetainedMemory<byte> SerializeToRetainedMemory<T>(T value, int offset = 0)
         {
             var segment = SerializeToRentedBuffer(value, offset);
-            var arrayMemory = ArrayMemory<byte>.Create(segment.Array, segment.Offset - offset, segment.Count + offset, externallyOwned: false, pin: false);
+            var arrayMemory = ArrayMemory<byte>.Create(segment.Array, segment.Offset - offset, segment.Count + offset, externallyOwned: false);
             return arrayMemory.Retain();
         }
 
@@ -424,7 +408,7 @@ namespace Spreads.Serialization.Utf8Json
             }
 
             {
-                var buf3 = BufferPool<byte>.Rent(65536);
+                var buf3 = BufferPool<byte>.Rent(16384);
                 var len = FillFromStream(stream, ref buf3);
                 try
                 {
@@ -444,38 +428,38 @@ namespace Spreads.Serialization.Utf8Json
 
         public static async System.Threading.Tasks.Task<T> DeserializeAsync<T>(Stream stream, IJsonFormatterResolver resolver)
         {
-            throw new NotImplementedException("Async is fake in Utf8Json, it is done over sync methods w.r.t. serialization and requires a full buffer.");
+            if (resolver == null) resolver = DefaultResolver;
 
-            //if (resolver == null) resolver = DefaultResolver;
+            var buffer = BufferPool.Default.Rent();
+            var handle = ((Memory<byte>) buffer).Pin();
+            DirectBuffer db = new DirectBuffer(buffer.Length, handle);
+            try
+            {
+                int length = 0;
+                int read;
+                while ((read = await stream.ReadAsync(buffer, length, buffer.Length - length).ConfigureAwait(false)) > 0)
+                {
+                    length += read;
+                    if (length == buffer.Length)
+                    {
+                        BinaryUtil.FastResize(ref buffer, length * 2);
+                    }
+                }
 
-            //var buffer = BufferPool.Default.Rent();
-            //var buf = buffer;
-            //try
-            //{
-            //    int length = 0;
-            //    int read;
-            //    while ((read = await stream.ReadAsync(buf, length, buf.Length - length).ConfigureAwait(false)) > 0)
-            //    {
-            //        length += read;
-            //        if (length == buf.Length)
-            //        {
-            //            BinaryUtil.FastResize(ref buf, length * 2);
-            //        }
-            //    }
+                // when token is number, can not use from pool(can not find end line).
+                var token = new JsonReader(db).GetCurrentJsonToken();
+                if (token == JsonToken.Number)
+                {
+                    buffer = BinaryUtil.FastCloneWithResize(buffer, length);
+                }
 
-            //    // when token is number, can not use from pool(can not find end line).
-            //    var token = new JsonReader(buf).GetCurrentJsonToken();
-            //    if (token == JsonToken.Number)
-            //    {
-            //        buf = BinaryUtil.FastCloneWithResize(buf, length);
-            //    }
-
-            //    return Deserialize<T>(buf, resolver);
-            //}
-            //finally
-            //{
-            //    BufferPool.Default.Return(buffer);
-            //}
+                return Deserialize<T>(buffer, resolver);
+            }
+            finally
+            {
+                handle.Dispose();
+                BufferPool.Default.Return(buffer);
+            }
         }
 
         //[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -630,25 +614,19 @@ namespace Spreads.Serialization.Utf8Json
             return length;
         }
 
-        private static class MemoryPool
+        internal static class MemoryPool
         {
-#if !SPREADS
             [ThreadStatic]
-            private static byte[] buffer = null;
-#endif
+            internal static byte[] buffer = null;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static byte[] GetBuffer()
             {
-#if !SPREADS
                 if (buffer == null)
                 {
-                    buffer = new byte[65536];
+                    buffer = new byte[16384];
                 }
                 return buffer;
-#else
-                return Buffers.BufferPool.StaticBuffer.Array;
-#endif
             }
         }
     }

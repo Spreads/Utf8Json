@@ -1,19 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 
 #if NETSTANDARD
+
 using System.Runtime.CompilerServices;
+
 #endif
 
 namespace Spreads.Serialization.Utf8Json.Internal
 {
     public static class BinaryUtil
     {
-        const int ArrayMaxSize = 0x7FFFFFC7; // https://msdn.microsoft.com/en-us/library/system.array
+        private const int ArrayMaxSize = 0x7FFFFFC7; // https://msdn.microsoft.com/en-us/library/system.array
 
 #if NETSTANDARD
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public static void EnsureCapacity(ref byte[] bytes, int offset, int appendLength)
@@ -68,10 +69,10 @@ namespace Spreads.Serialization.Utf8Json.Internal
         private static void ThrowMaxCapacity()
         {
             throw new InvalidOperationException("byte[] size reached maximum size of array(0x7FFFFFC7), can not write to single byte[]. Details: https://msdn.microsoft.com/en-us/library/system.array");
-
         }
 
 #if NETSTANDARD
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public static void FastResize(ref byte[] array, int newSize)
@@ -105,7 +106,7 @@ namespace Spreads.Serialization.Utf8Json.Internal
 #endif
                 Unsafe.CopyBlockUnaligned(ref array3[0], ref array2[0], (uint)((array2.Length > newSize) ? newSize : array2.Length));
 #if SPREADS
-                if (array2 != Buffers.BufferPool.StaticBuffer.Array)
+                if (array2 != JsonSerializer.MemoryPool.buffer)
                 {
                     Buffers.BufferPool<byte>.Return(array2, true);
                 }
@@ -115,6 +116,7 @@ namespace Spreads.Serialization.Utf8Json.Internal
         }
 
 #if NETSTANDARD
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public static
@@ -124,9 +126,10 @@ namespace Spreads.Serialization.Utf8Json.Internal
             byte[] FastCloneWithResize(byte[] src, int newSize)
         {
             if (newSize < 0) throw new ArgumentOutOfRangeException("newSize");
-            if (src.Length < newSize) throw new ArgumentException("length < newSize");
 
             if (src == null) return new byte[newSize];
+
+            if (src.Length < newSize) throw new ArgumentException("length < newSize");
 
             if (newSize == 0)
             {

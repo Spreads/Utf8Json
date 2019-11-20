@@ -293,7 +293,6 @@ namespace Spreads.Serialization.Utf8Json
 
         private static Vector<byte> InitWsCandidates()
         {
-            Span<byte> sp = default;
             var bytes = new byte[Vector<byte>.Count];
             bytes[0] = 0x20;
             bytes[1] = 0x09;
@@ -958,9 +957,6 @@ namespace Spreads.Serialization.Utf8Json
         {
             if (ReadIsNull()) return nullTokenSegment.DirectBuffer;
 
-            DirectBuffer bytes;
-            int offset;
-            int length;
             return ReadStringSegmentCore();
         }
 
